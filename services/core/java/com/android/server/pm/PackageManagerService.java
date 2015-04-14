@@ -1372,6 +1372,7 @@ public class PackageManagerService extends IPackageManager.Stub {
         mGlobalGids = systemConfig.getGlobalGids();
         mSystemPermissions = systemConfig.getSystemPermissions();
         mAvailableFeatures = systemConfig.getAvailableFeatures();
+        mSignatureAllowances = systemConfig.getSignatureAllowances();
 
         synchronized (mInstallLock) {
         // writer
@@ -7312,7 +7313,8 @@ public class PackageManagerService extends IPackageManager.Stub {
                         == PackageManager.SIGNATURE_MATCH);
         if (!allowed && (bp.protectionLevel
                 & PermissionInfo.PROTECTION_FLAG_SYSTEM) != 0) {
-            if (isSystemApp(pkg)) {
+            boolean allowedSig = isAllowedSignature(pkg, perm);
+            if (isSystemApp(pkg) || allowedSig) {
                 // For updated system applications, a system permission
                 // is granted only if it had been defined by the original application.
                 if (isUpdatedSystemApp(pkg)) {
@@ -7350,7 +7352,7 @@ public class PackageManagerService extends IPackageManager.Stub {
                         }
                     }
                 } else {
-                    allowed = isPrivilegedApp(pkg);
+                    allowed = isPrivilegedApp(pkg) || allowedSig;
                 }
             }
         }
